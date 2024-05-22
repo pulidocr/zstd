@@ -115,6 +115,13 @@
 #  endif
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#define DEVDIV_NOINLINE __declspec(noinline)
+#elif defined(__clang__)
+#define DEVDIV_NOINLINE __attribute__((noinline))
+#else
+#define DEVDIV_NOINLINE
+#endif
 
 /* target attribute */
 #if defined(__GNUC__) || defined(__ICCARM__)
