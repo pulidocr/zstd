@@ -809,9 +809,9 @@ BMK_benchOutcome_t BMK_benchMemAdvanced(
     size_t* const resSizes = (size_t*)malloc(maxNbBlocks * sizeof(size_t));
 
     BMK_timedFnState_t* timeStateCompress = BMK_createTimedFnState(
-            adv->nbSeconds * 1000, BMK_RUNTEST_DEFAULT_MS);
+            adv->nbSeconds * 1000, BMK_RUNTEST_DEFAULT_MS, /*0 should not change existing behavior*/ adv->fixedCallCount);
     BMK_timedFnState_t* timeStateDecompress = BMK_createTimedFnState(
-            adv->nbSeconds * 1000, BMK_RUNTEST_DEFAULT_MS);
+            adv->nbSeconds * 1000, BMK_RUNTEST_DEFAULT_MS, /*0 should not change existing behavior*/ adv->fixedCallCount);
 
     ZSTD_CCtx* const cctx = ZSTD_createCCtx();
     ZSTD_DCtx* const dctx = ZSTD_createDCtx();

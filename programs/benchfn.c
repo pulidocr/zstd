@@ -154,14 +154,15 @@ struct BMK_timedFnState_s {
     PTime runBudget_ns;
     BMK_runTime_t fastestRun;
     unsigned nbLoops;
+    int isFixedCallCount;     /* flag: If set, instead of calling the function until 1 second has passed, call the function a fixed number of times per iteration. */
     UTIL_time_t coolTime;
 };  /* typedef'd to BMK_timedFnState_t within bench.h */
 
-BMK_timedFnState_t* BMK_createTimedFnState(unsigned total_ms, unsigned run_ms)
+BMK_timedFnState_t* BMK_createTimedFnState(unsigned total_ms, unsigned run_ms, unsigned fixedCallCount)
 {
     BMK_timedFnState_t* const r = (BMK_timedFnState_t*)malloc(sizeof(*r));
     if (r == NULL) return NULL;   /* malloc() error */
-    BMK_resetTimedFnState(r, total_ms, run_ms);
+    BMK_resetTimedFnState(r, total_ms, run_ms, fixedCallCount);
     return r;
 }
 
@@ -177,11 +178,11 @@ BMK_initStatic_timedFnState(void* buffer, size_t size, unsigned total_ms, unsign
     if (buffer == NULL) return NULL;
     if (size < sizeof(struct BMK_timedFnState_s)) return NULL;
     if ((size_t)buffer % tfs_alignment) return NULL;  /* buffer must be properly aligned */
-    BMK_resetTimedFnState(r, total_ms, run_ms);
+    BMK_resetTimedFnState(r, total_ms, run_ms, 0);
     return r;
 }
 
-void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, unsigned run_ms)
+void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, unsigned run_ms, unsigned fixedCallCount)
 {
     if (!total_ms) total_ms = 1 ;
     if (!run_ms) run_ms = 1;
@@ -191,7 +192,14 @@ void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, 
     timedFnState->runBudget_ns = (PTime)run_ms * TIMELOOP_NANOSEC / 1000;
     timedFnState->fastestRun.nanoSecPerRun = (double)TIMELOOP_NANOSEC * 2000000000;  /* hopefully large enough : must be larger than any potential measurement */
     timedFnState->fastestRun.sumOfReturn = (size_t)(-1LL);
-    timedFnState->nbLoops = 1;
+    if (fixedCallCount == 0) {
+        timedFnState->nbLoops = 1;
+        timedFnState->isFixedCallCount = 0;
+    }
+    else {
+        timedFnState->nbLoops = fixedCallCount;
+        timedFnState->isFixedCallCount = 1;
+    }
     timedFnState->coolTime = UTIL_getTime();
 }
 

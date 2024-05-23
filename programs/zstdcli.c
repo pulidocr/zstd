@@ -312,6 +312,7 @@ static void usageAdvanced(const char* programName)
     DISPLAYOUT("  -B#                           Cut file into independent chunks of size #. [Default: No chunking]\n");
     DISPLAYOUT("  -S                            Output one benchmark result per input file. [Default: Consolidated result]\n");
     DISPLAYOUT("  --priority=rt                 Set process priority to real-time.\n");
+    DISPLAYOUT("  --fixed-call-count=#          Specify non-zero number to run a fixed number of calls instead of running for 1 second. [Default: 0]\n");
 #endif
 
 }
@@ -886,6 +887,7 @@ int main(int argCount, const char* argv[])
     size_t nbInputFileNames = 0;
     int dictCLevel = g_defaultDictCLevel;
     unsigned dictSelect = g_defaultSelectivityLevel;
+    unsigned fixedCallCount = 0;
 #ifndef ZSTD_NODICT
     ZDICT_cover_params_t coverParams = defaultCoverParams();
     ZDICT_fastCover_params_t fastCoverParams = defaultFastCoverParams();
@@ -1050,6 +1052,7 @@ int main(int argCount, const char* argv[])
                   continue;
                 }
 #endif
+                if (longCommandWArg(&argument, "--fixed-call-count")) { NEXT_UINT32(fixedCallCount); continue; }
                 if (longCommandWArg(&argument, "--threads")) { NEXT_UINT32(nbWorkers); continue; }
                 if (longCommandWArg(&argument, "--memlimit")) { NEXT_UINT32(memLimit); continue; }
                 if (longCommandWArg(&argument, "--memory")) { NEXT_UINT32(memLimit); continue; }
@@ -1383,6 +1386,7 @@ int main(int argCount, const char* argv[])
         benchParams.ldmMinMatch = (int)g_ldmMinMatch;
         benchParams.ldmHashLog = (int)g_ldmHashLog;
         benchParams.useRowMatchFinder = (int)useRowMatchFinder;
+        benchParams.fixedCallCount = fixedCallCount;
         if (g_ldmBucketSizeLog != LDM_PARAM_DEFAULT) {
             benchParams.ldmBucketSizeLog = (int)g_ldmBucketSizeLog;
         }

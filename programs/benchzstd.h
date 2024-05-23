@@ -111,6 +111,7 @@ typedef struct {
     int ldmHashRateLog;
     ZSTD_paramSwitch_e literalCompressionMode;
     int useRowMatchFinder;  /* use row-based matchfinder if possible */
+    unsigned fixedCallCount;    /* use fixed call count instead of shooting for 1 second */
 } BMK_advancedParams_t;
 
 /* returns default parameters used by nonAdvanced functions */

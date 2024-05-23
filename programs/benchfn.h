@@ -158,8 +158,8 @@ unsigned BMK_getNbLoops(const BMK_timedFnState_t* timedFnState);
  * which shall last a minimum of total_ms milliseconds,
  * producing intermediate results, paced at interval of (approximately) run_ms.
  */
-BMK_timedFnState_t* BMK_createTimedFnState(unsigned total_ms, unsigned run_ms);
-void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, unsigned run_ms);
+BMK_timedFnState_t* BMK_createTimedFnState(unsigned total_ms, unsigned run_ms, unsigned fixedCallCount);
+void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, unsigned run_ms, unsigned fixedCallCount);
 void BMK_freeTimedFnState(BMK_timedFnState_t* state);
 
 

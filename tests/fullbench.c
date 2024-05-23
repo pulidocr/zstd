@@ -653,7 +653,7 @@ static int benchMem(unsigned benchNb,
     { size_t i; for (i=0; i<dstBuffSize; i++) dstBuff[i]=(BYTE)i; }
 
     /* benchmark loop */
-    {   BMK_timedFnState_t* const tfs = BMK_createTimedFnState(g_nbIterations * 1000, 1000);
+    {   BMK_timedFnState_t* const tfs = BMK_createTimedFnState(g_nbIterations * 1000, 1000, /*0 should not change existing behavior*/ 0);
         void* const avoidStrictAliasingPtr = &dstBuff;
         BMK_benchParams_t bp;
         BMK_runTime_t bestResult;
