@@ -207,7 +207,7 @@ void BMK_resetTimedFnState(BMK_timedFnState_t* timedFnState, unsigned total_ms, 
  * note : this function will return 1 if BMK_benchFunctionTimed() has actually errored. */
 int BMK_isCompleted_TimedFn(const BMK_timedFnState_t* timedFnState)
 {
-    return (timedFnState->timeSpent_ns >= timedFnState->timeBudget_ns);
+    return (timedFnState->isFixedCallCount || timedFnState->timeSpent_ns >= timedFnState->timeBudget_ns);
 }
 
 unsigned BMK_getNbLoops(const BMK_timedFnState_t* timedFnState)
@@ -220,6 +220,53 @@ unsigned BMK_getNbLoops(const BMK_timedFnState_t* timedFnState)
 #define MIN(a,b)   ( (a) < (b) ? (a) : (b) )
 
 #define MINUSABLETIME  (TIMELOOP_NANOSEC / 2)  /* 0.5 seconds */
+
+static void BMK_adjustCallCount(const BMK_runTime_t* newRunTime, 
+    const BMK_runTime_t* bestRunTime,
+    BMK_timedFnState_t* cont,
+    double loopDuration_ns,
+    double runBudget_ns)
+{
+    if (cont->isFixedCallCount) {
+        /* Don't adjust if the user wants a specific call count. */
+        return;
+    }
+    if (loopDuration_ns > (runBudget_ns / 50)) {
+        double const fastestRun_ns = MIN(bestRunTime->nanoSecPerRun, newRunTime->nanoSecPerRun);
+        cont->nbLoops = (unsigned)(runBudget_ns / fastestRun_ns) + 1;
+    } else {
+        /* previous run was too short : blindly increase workload by x multiplier */
+        const unsigned multiplier = 10;
+        assert(cont->nbLoops < ((unsigned)-1) / multiplier);  /* avoid overflow */
+        cont->nbLoops *= multiplier;
+    }
+}
+
+static int BMK_benchIsCompleted(const BMK_runTime_t* newRunTime, 
+    BMK_runTime_t* bestRunTime,
+    double loopDuration_ns,
+    double runTimeMin_ns,
+    int isFixedCallCount)
+{
+    /* fixed call count is automatically completed */
+    if (isFixedCallCount) {
+        if(newRunTime->nanoSecPerRun < bestRunTime->nanoSecPerRun) {
+            *bestRunTime = *newRunTime;
+        }
+        return 1;
+    }
+
+    /* estimate nbLoops for next run to last approximately 1 second */
+    if(loopDuration_ns < runTimeMin_ns) {
+        /* don't report results for which benchmark run time was too small : increased risks of rounding errors */
+        return 0;
+    } else {
+        if(newRunTime->nanoSecPerRun < bestRunTime->nanoSecPerRun) {
+            *bestRunTime = *newRunTime;
+        }
+    }
+    return 1;
+}
 
 BMK_runOutcome_t BMK_benchTimedFn(BMK_timedFnState_t* cont,
                                   BMK_benchParams_t p)
@@ -241,6 +288,10 @@ BMK_runOutcome_t BMK_benchTimedFn(BMK_timedFnState_t* cont,
 
             cont->timeSpent_ns += (unsigned long long)loopDuration_ns;
 
+#if 1
+            BMK_adjustCallCount(&newRunTime, &bestRunTime, cont, loopDuration_ns, (double)runBudget_ns);
+            completed = BMK_benchIsCompleted(&newRunTime, &bestRunTime, loopDuration_ns, (double)runTimeMin_ns, cont->isFixedCallCount);
+#else
             /* estimate nbLoops for next run to last approximately 1 second */
             if (loopDuration_ns > ((double)runBudget_ns / 50)) {
                 double const fastestRun_ns = MIN(bestRunTime.nanoSecPerRun, newRunTime.nanoSecPerRun);
@@ -262,6 +313,7 @@ BMK_runOutcome_t BMK_benchTimedFn(BMK_timedFnState_t* cont,
                 }
                 completed = 1;
             }
+#endif
         }
     }   /* while (!completed) */
 
