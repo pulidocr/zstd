@@ -150,6 +150,9 @@ BMK_runOutcome_t BMK_benchTimedFn(BMK_timedFnState_t* timedFnState,
  */
 int BMK_isCompleted_TimedFn(const BMK_timedFnState_t* timedFnState);
 
+/* Extract the number of calls required to approximate 1 second. */
+unsigned BMK_getNbLoops(const BMK_timedFnState_t* timedFnState);
+
 /* BMK_createTimedFnState() and BMK_resetTimedFnState() :
  * Create/Set BMK_timedFnState_t for next benchmark session,
  * which shall last a minimum of total_ms milliseconds,

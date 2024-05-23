@@ -663,7 +663,7 @@ static BMK_benchOutcome_t BMK_benchMemAdvancedNoAlloc(
                     int const ratioAccuracy = (ratio < 10.) ? 3 : 2;
                     OUTPUTLEVEL(
                             2,
-                            "%2s-%-17.17s :%10u ->%10u (x%5.*f), %6.*f MB/s, %6.1f MB/s\r",
+                            "%2s-%-17.17s :%10u ->%10u (x%5.*f), %6.*f MB/s, %6.1f MB/s (cNbLoops: %8u) (dNbLoops: %8u)\r",
                             marks[markNb],
                             displayName,
                             (unsigned)srcSize,
@@ -672,7 +672,9 @@ static BMK_benchOutcome_t BMK_benchMemAdvancedNoAlloc(
                             ratio,
                             benchResult.cSpeed < (10 * MB_UNIT) ? 2 : 1,
                             (double)benchResult.cSpeed / MB_UNIT,
-                            (double)benchResult.dSpeed / MB_UNIT);
+                            (double)benchResult.dSpeed / MB_UNIT,
+                            BMK_getNbLoops(timeStateCompress),
+                            BMK_getNbLoops(timeStateDecompress));
                 }
                 decompressionCompleted =
                         BMK_isCompleted_TimedFn(timeStateDecompress);

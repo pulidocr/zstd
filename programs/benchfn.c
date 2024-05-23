@@ -202,6 +202,11 @@ int BMK_isCompleted_TimedFn(const BMK_timedFnState_t* timedFnState)
     return (timedFnState->timeSpent_ns >= timedFnState->timeBudget_ns);
 }
 
+unsigned BMK_getNbLoops(const BMK_timedFnState_t* timedFnState)
+{
+    return timedFnState->nbLoops;
+}
+
 
 #undef MIN
 #define MIN(a,b)   ( (a) < (b) ? (a) : (b) )
